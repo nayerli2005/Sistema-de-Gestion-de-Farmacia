@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,6 +23,7 @@ namespace Sistema_de_Gestion_de_Farmacia.Formularios
         // CARGAR FORMULARIO
         private void frmVentas_Load(object sender, EventArgs e)
         {
+            // Módulo de ventas
             CargarClientes();
             CargarProductos();
 
