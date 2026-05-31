@@ -30,7 +30,7 @@ namespace Sistema_de_Gestion_de_Farmacia.Formularios
 
 
             // Modulo de clientes actualizado
-            // Cambio para Pull Request
+
             MostrarClientes();
         }
 
