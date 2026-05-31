@@ -41,8 +41,6 @@ name: WinForms Build (.NET Framework)
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 jobs:
   build:
@@ -55,30 +53,23 @@ jobs:
 
     steps:
 
-    # 📥 Clonar repo
     - name: Checkout
       uses: actions/checkout@v4
 
-    # 🔧 MSBuild (OBLIGATORIO para .NET Framework)
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 🔧 NuGet (para restaurar paquetes antiguos)
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-    # 📦 Restore (IMPORTANTE: NO dotnet restore)
-    - name: Restore NuGet packages
-      run: nuget restore "Sistema de Gestion de Farmacia.sln"
+    # 🔎 Ver qué archivos existen
+    - name: List project files
+      run: Get-ChildItem -Recurse -Include *.csproj
 
-    # 🔎 Ver estructura (opcional pero útil)
-    - name: Find solution
-      run: Get-ChildItem -Recurse -Filter *.sln
+    # 📦 Restore (DIRECTO AL CSPROJ)
+    - name: Restore
+      run: nuget restore "Sistema de Gestion de Farmacia.csproj"
 
-    # 🔨 Build (CORRECTO PARA .NET FRAMEWORK)
-    - name: Build solution
-      run: msbuild "Sistema de Gestion de Farmacia.sln" /p:Configuration=${{ matrix.configuration }}
-
-    # 🧪 Tests (si tienes proyectos de test .NET Framework)
-    - name: Test
-      run: echo "No test project detected"
+    # 🔨 Build
+    - name: Build
+      run: msbuild "Sistema de Gestion de Farmacia.csproj" /p:Configuration=${{ matrix.configuration }}
