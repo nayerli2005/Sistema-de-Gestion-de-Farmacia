@@ -27,6 +27,10 @@ namespace Sistema_de_Gestion_de_Farmacia.Formularios
 
         private void frmClientes_Load(object sender, EventArgs e)
         {
+
+
+            // Modulo de clientes actualizado
+            // Cambio para Pull Request
             MostrarClientes();
         }
 
