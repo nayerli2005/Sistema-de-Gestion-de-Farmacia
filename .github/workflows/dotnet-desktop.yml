@@ -46,6 +46,7 @@ on:
 
 jobs:
   build:
+
     runs-on: windows-latest
 
     strategy:
@@ -60,30 +61,33 @@ jobs:
 
     steps:
 
+    # 🔥 Descargar repositorio
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # 🔧 Instalar .NET
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
+    # 🔧 MSBuild (para packaging WPF/MSIX)
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 🔎 Verifica que el archivo exista (clave para evitar tu error)
-    - name: Find solution file
+    # 🔎 Ver estructura (IMPORTANTE para evitar errores de ruta)
+    - name: List files
       run: Get-ChildItem -Recurse -Filter *.slnx
 
-    # 📦 Restore (RECOMENDADO dotnet en lugar de msbuild)
+    # 📦 RESTORE (CORRECTO)
     - name: Restore dependencies
-      run: dotnet restore "$env:GITHUB_WORKSPACE/${{ env.Solution_Path }}"
+      run: dotnet restore "${{ env.Solution_Path }}"
 
-    # 🔨 Build
+    # 🔨 BUILD (CORRECTO)
     - name: Build solution
-      run: dotnet build "$env:GITHUB_WORKSPACE/${{ env.Solution_Path }}" -c ${{ matrix.configuration }}
+      run: dotnet build "${{ env.Solution_Path }}" -c ${{ matrix.configuration }}
 
-    # 🧪 Tests (si tienes)
+    # 🧪 TESTS
     - name: Run tests
       run: dotnet test
 
@@ -94,10 +98,10 @@ jobs:
         $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
-    # 📦 Package
-    - name: Create package
-      run: msbuild "$env:Wap_Project_Path" `
-        /p:Configuration=$env:Configuration `
+    # 📦 CREATE PACKAGE (WPF/MSIX)
+    - name: Create app package
+      run: msbuild "${{ env.Wap_Project_Path }}" `
+        /p:Configuration=${{ matrix.configuration }} `
         /p:UapAppxPackageBuildMode=StoreUpload `
         /p:AppxBundle=Always `
         /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx `
