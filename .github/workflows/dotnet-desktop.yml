@@ -54,14 +54,13 @@ jobs:
         configuration: [Debug, Release]
 
     env:
-      Solution_Path: "src/Sistema de Gestión de Farmacia.slnx"
       Configuration: ${{ matrix.configuration }}
       Wap_Project_Directory: your-wap-project-directory-name
       Wap_Project_Path: your-wap-project-path
 
     steps:
 
-    # 🔥 Descargar repositorio
+    # 📥 Descargar código
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -71,34 +70,37 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    # 🔧 MSBuild (para packaging WPF/MSIX)
+    # 🔧 MSBuild (para WPF/MSIX)
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 🔎 Ver estructura (IMPORTANTE para evitar errores de ruta)
-    - name: List files
-      run: Get-ChildItem -Recurse -Filter *.slnx
+    # 🔎 BUSCAR AUTOMÁTICAMENTE EL .SLNX (CLAVE)
+    - name: Find solution file
+      id: find_slnx
+      run: |
+        $file = Get-ChildItem -Recurse -Filter *.slnx | Select-Object -First 1
+        echo "FOUND=$($file.FullName)" >> $env:GITHUB_ENV
 
-    # 📦 RESTORE (CORRECTO)
+    # 📦 RESTORE (AUTOMÁTICO)
     - name: Restore dependencies
-      run: dotnet restore "${{ env.Solution_Path }}"
+      run: dotnet restore "${{ env.FOUND }}"
 
-    # 🔨 BUILD (CORRECTO)
+    # 🔨 BUILD (AUTOMÁTICO)
     - name: Build solution
-      run: dotnet build "${{ env.Solution_Path }}" -c ${{ matrix.configuration }}
+      run: dotnet build "${{ env.FOUND }}" -c ${{ matrix.configuration }}
 
     # 🧪 TESTS
     - name: Run tests
       run: dotnet test
 
-    # 🔐 Decode certificate
+    # 🔐 CERTIFICADO
     - name: Decode certificate
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
         $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
-    # 📦 CREATE PACKAGE (WPF/MSIX)
+    # 📦 PACKAGING WPF / MSIX
     - name: Create app package
       run: msbuild "${{ env.Wap_Project_Path }}" `
         /p:Configuration=${{ matrix.configuration }} `
@@ -107,12 +109,12 @@ jobs:
         /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx `
         /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
 
-    # 🧹 Remove certificate
+    # 🧹 BORRAR CERTIFICADO
     - name: Remove certificate
       run: Remove-Item "$env:Wap_Project_Directory\GitHubActionsWorkflow.pfx"
 
-    # 📤 Upload artifact
-    - name: Upload build artifacts
+    # 📤 SUBIR RESULTADO
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: MSIX Package
