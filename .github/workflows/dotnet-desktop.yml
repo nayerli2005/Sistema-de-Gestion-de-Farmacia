@@ -73,3 +73,9 @@ jobs:
     # 🔨 Build (RUTA CORRECTA)
     - name: Build
       run: msbuild "Sistema de Gestion de Farmacia\Sistema de Gestion de Farmacia.csproj" /p:Configuration=${{ matrix.configuration }}
+steps:
+   - name: Deploy (Upload artifact)
+  uses: actions/upload-artifact@v4
+  with:
+    name: Sistema-Farmacia-App
+    path: Sistema de Gestion de Farmacia/bin/Release/
