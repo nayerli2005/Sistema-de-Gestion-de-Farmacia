@@ -62,14 +62,14 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-    # 🔎 Ver qué archivos existen
-    - name: List project files
-      run: Get-ChildItem -Recurse -Include *.csproj
+    # 🔎 Ver estructura real del repo
+    - name: List files
+      run: tree /F
 
-    # 📦 Restore (DIRECTO AL CSPROJ)
+    # 📦 Restore (RUTA CORRECTA)
     - name: Restore
-      run: nuget restore "Sistema de Gestion de Farmacia.csproj"
+      run: nuget restore "Sistema de Gestion de Farmacia\Sistema de Gestion de Farmacia.csproj"
 
-    # 🔨 Build
+    # 🔨 Build (RUTA CORRECTA)
     - name: Build
-      run: msbuild "Sistema de Gestion de Farmacia.csproj" /p:Configuration=${{ matrix.configuration }}
+      run: msbuild "Sistema de Gestion de Farmacia\Sistema de Gestion de Farmacia.csproj" /p:Configuration=${{ matrix.configuration }}
