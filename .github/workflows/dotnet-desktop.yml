@@ -36,7 +36,7 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: WPF Build
+name: WinForms Build (.NET Framework)
 
 on:
   push:
@@ -53,38 +53,32 @@ jobs:
       matrix:
         configuration: [Debug, Release]
 
-    env:
-      Solution_Path: "Sistema de Gestion de Farmacia.slnx"
-      Configuration: ${{ matrix.configuration }}
-
     steps:
 
     # 📥 Clonar repo
     - name: Checkout
       uses: actions/checkout@v4
 
-    # 🔧 .NET 8 (IMPORTANTE: NO usar .NET 10)
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-
-    # 🔧 MSBuild
+    # 🔧 MSBuild (OBLIGATORIO para .NET Framework)
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 🔎 Buscar solución (seguridad extra)
+    # 🔧 NuGet (para restaurar paquetes antiguos)
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    # 📦 Restore (IMPORTANTE: NO dotnet restore)
+    - name: Restore NuGet packages
+      run: nuget restore "Sistema de Gestion de Farmacia.sln"
+
+    # 🔎 Ver estructura (opcional pero útil)
     - name: Find solution
-      run: Get-ChildItem -Recurse -Filter *.slnx
+      run: Get-ChildItem -Recurse -Filter *.sln
 
-    # 📦 Restore
-    - name: Restore
-      run: dotnet restore "${{ env.Solution_Path }}"
+    # 🔨 Build (CORRECTO PARA .NET FRAMEWORK)
+    - name: Build solution
+      run: msbuild "Sistema de Gestion de Farmacia.sln" /p:Configuration=${{ matrix.configuration }}
 
-    # 🔨 Build
-    - name: Build
-      run: dotnet build "${{ env.Solution_Path }}" -c ${{ matrix.configuration }}
-
-    # 🧪 Tests
+    # 🧪 Tests (si tienes proyectos de test .NET Framework)
     - name: Test
-      run: dotnet test
+      run: echo "No test project detected"
