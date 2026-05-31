@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -26,6 +27,7 @@ namespace Sistema_de_Gestion_de_Farmacia.Formularios
 
         private void frmProductos_Load(object sender, EventArgs e)
         {
+            //Módulo de productos
             cmbCategoria.Items.Add("Medicamentos");
             cmbCategoria.Items.Add("Vitaminas");
             cmbCategoria.Items.Add("Higiene");
