@@ -36,7 +36,7 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: .NET WPF Build
+name: WPF Build
 
 on:
   push:
@@ -54,68 +54,37 @@ jobs:
         configuration: [Debug, Release]
 
     env:
+      Solution_Path: "Sistema de Gestion de Farmacia.slnx"
       Configuration: ${{ matrix.configuration }}
-      Wap_Project_Directory: your-wap-project-directory-name
-      Wap_Project_Path: your-wap-project-path
 
     steps:
 
-    # 📥 Descargar código
-    - name: Checkout repository
+    # 📥 Clonar repo
+    - name: Checkout
       uses: actions/checkout@v4
 
-    # 🔧 Instalar .NET
+    # 🔧 .NET 8 (IMPORTANTE: NO usar .NET 10)
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    # 🔧 MSBuild (para WPF/MSIX)
+    # 🔧 MSBuild
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 🔎 BUSCAR AUTOMÁTICAMENTE EL .SLNX (CLAVE)
-    - name: Find solution file
-      id: find_slnx
-      run: |
-        $file = Get-ChildItem -Recurse -Filter *.slnx | Select-Object -First 1
-        echo "FOUND=$($file.FullName)" >> $env:GITHUB_ENV
+    # 🔎 Buscar solución (seguridad extra)
+    - name: Find solution
+      run: Get-ChildItem -Recurse -Filter *.slnx
 
-    # 📦 RESTORE (AUTOMÁTICO)
-    - name: Restore dependencies
-      run: dotnet restore "${{ env.FOUND }}"
+    # 📦 Restore
+    - name: Restore
+      run: dotnet restore "${{ env.Solution_Path }}"
 
-    # 🔨 BUILD (AUTOMÁTICO)
-    - name: Build solution
-      run: dotnet build "${{ env.FOUND }}" -c ${{ matrix.configuration }}
+    # 🔨 Build
+    - name: Build
+      run: dotnet build "${{ env.Solution_Path }}" -c ${{ matrix.configuration }}
 
-    # 🧪 TESTS
-    - name: Run tests
+    # 🧪 Tests
+    - name: Test
       run: dotnet test
-
-    # 🔐 CERTIFICADO
-    - name: Decode certificate
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-
-    # 📦 PACKAGING WPF / MSIX
-    - name: Create app package
-      run: msbuild "${{ env.Wap_Project_Path }}" `
-        /p:Configuration=${{ matrix.configuration }} `
-        /p:UapAppxPackageBuildMode=StoreUpload `
-        /p:AppxBundle=Always `
-        /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx `
-        /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
-
-    # 🧹 BORRAR CERTIFICADO
-    - name: Remove certificate
-      run: Remove-Item "$env:Wap_Project_Directory\GitHubActionsWorkflow.pfx"
-
-    # 📤 SUBIR RESULTADO
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: MSIX Package
-        path: ${{ env.Wap_Project_Directory }}\AppPackages
